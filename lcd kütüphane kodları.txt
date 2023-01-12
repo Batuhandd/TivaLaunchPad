@@ -1,0 +1,97 @@
+#include "stdbool.h"
+#include "stdint.h"
+#include "inc/hw_ints.h"
+#include "inc/hw_types.h"
+#include "inc/hw_memmap.h"
+#include "driverlib/sysctl.h"
+#include "driverlib/gpio.h"
+#include "lcd.h"
+
+https://www.youtube.com/watch?v=ITTBWSQTi3c
+
+void Lcd_ilk_ayarlar() {
+
+
+   for(i=0;i<=2;i++){
+
+     SysCtlPeripheralEnable(SYSCTL_PERIPH_GPIOB);
+     GPIOPinTypeGPIOOutput(LCDPORT, 0xFF);
+     SysCtlDelay(20000/3);
+     GPIOPinWrite(LCDPORT, RS, 0);
+     GPIOPinWrite(LCDPORT,D4|D5|D6|D7 ,0x30);
+     GPIOPinWrite(LCDPORT,E,2);
+     SysCtlDelay(20000/3);
+     GPIOPinWrite(LCDPORT,E,0);
+
+   }
+
+
+}
+void Lcd_Komut_Gonder(unsigned char c)
+{
+            SysCtlDelay(20000);
+            GPIOPinWrite(LCDPORT, RS, 0);
+            GPIOPinWrite(LCDPORT,D4|D5|D6|D7 ,(c & 0xF0));
+            GPIOPinWrite(LCDPORT,E,2);
+            SysCtlDelay(20000/3);
+            GPIOPinWrite(LCDPORT,E,0);
+
+
+            SysCtlDelay(20000/3);
+            GPIOPinWrite(0x40005000, RS, 0);
+            GPIOPinWrite(LCDPORT, D4|D5|D6|D7 ,(c & 0x0F)<<4); // 4 bit yazma için gerekli maskeleme
+            GPIOPinWrite(LCDPORT,E,2);
+            SysCtlDelay(20000/3);
+            GPIOPinWrite(LCDPORT,E,0);
+
+}
+void Lcd_Tek_Karakter_Yaz(unsigned char d) {
+     GPIOPinWrite(LCDPORT, RS,1);
+     GPIOPinWrite(LCDPORT,D4|D5|D6|D7 ,(d & 0xF0));
+     GPIOPinWrite(LCDPORT,E,2);
+     SysCtlDelay(20000/3);
+     GPIOPinWrite(LCDPORT,E,0);
+     SysCtlDelay(20000/3);
+
+     GPIOPinWrite(LCDPORT, RS,1);
+     GPIOPinWrite(LCDPORT,D4|D5|D6|D7 ,(d & 0x0F)<<4);
+     GPIOPinWrite(LCDPORT,E,2);
+     SysCtlDelay(20000/3);
+     GPIOPinWrite(LCDPORT,E,0);
+     SysCtlDelay(20000/3);
+
+
+}
+void Lcd_Satir_Sutuna_Git(char x, char y){
+    if(x==1)
+       {
+        Lcd_Komut_Gonder(0x80+(y-1));
+       }
+       else
+       {
+          Lcd_Komut_Gonder(0xC0+(y-1));
+       }
+
+     SysCtlDelay(10000);
+
+}
+void Lcd_Temizle(void){
+
+    Lcd_Komut_Gonder(0x01);
+    SysCtlDelay(20000/3);
+}
+void Lcd_Cok_Karakter_Yaz(unsigned char dizi[], int dizisayisi){
+
+    for( z=0;z<=dizisayisi;z++){
+
+        Lcd_Tek_Karakter_Yaz(dizi[z]);
+
+
+
+    }
+
+
+
+
+}
+
